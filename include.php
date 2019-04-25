@@ -2,12 +2,15 @@
 
 global $token;
 global $language_code;
-global $apiURL;
+//global $apiURL;
 global $botName;
 
+//$ttoken = '';
 
-include 'config.php';
 
+include  'config.php';
+
+$apiURL = 'https://api.telegram.org/bot'.$token.'/';
 
 
 ?>

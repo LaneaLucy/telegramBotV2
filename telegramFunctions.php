@@ -2,7 +2,7 @@
 
 include 'include.php';
 
-$apiURL = 'https://api.telegram.org/bot'.token.'/';
+//$apiURL = 'https://api.telegram.org/bot'.$token.'/';
 
 
 function sendMessage($chat_ID, $message, $message_ID = "NULL")

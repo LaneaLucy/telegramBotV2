@@ -5,8 +5,8 @@ include 'include.php';
 include 'telegramFunctions.php';
 
 
-$apiURL = 'https://api.telegram.org/bot'.token.'/';
-$botName = getMe()->{'username'};
+//$apiURL = 'https://api.telegram.org/bot'.ttoken.'/';
+//$botName = getMe()->{'username'};
 
 
 $plugins = array();
