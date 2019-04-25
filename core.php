@@ -1,18 +1,33 @@
 <?php
 
-global $token = '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';
-global $language_code = 'en';
 
-
+include 'include.php';
 include 'telegramFunctions.php';
 
 
 $apiURL = 'https://api.telegram.org/bot'.token.'/';
-$botName = getMe()->{'username'}
+$botName = getMe()->{'username'};
 
+
+$plugins = array();
+
+
+/**
+spl_autoload_register(function ($class_name) {
+    include 'plugins/'.$class_name . '.php';
+});
+*/
 
 ########################### Load Plugins ###########################
 
+$path    = '/plugins';
+$files = scandir($path);
+
+foreach ($files as &$pluginFile) {
+	$pluginName = $files;
+	include 'plugins/'.$pluginName . '.php';
+	array_push($plugins, new $pluginName);
+}
 //bla
 
 ####################################################################
@@ -20,6 +35,9 @@ $botName = getMe()->{'username'}
 
 function triggerEvent($eventType, $data)
 {
+	foreach ($plugins as &$plugin) {
+		$plugin.handelEvent($eventType, $data);
+	}
 	//Code
 }
 
@@ -46,7 +64,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$message_ID = $jsonData->{'message'}->{'message_id'};
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$user = $jsonData->{'message'}->{'new_chat_member'};
-	$user_id = $user->{'id'}};
+	$user_id = $user->{'id'};
 	$user_is_bot = $user->{'is_bot'};
 	$user_first_name = $user->{'first_name'};
 	if (!strpos($user, 'username') === false) {
@@ -55,6 +73,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	if (!strpos($user, 'language_code') === false) {
 		$user_language_code = $user->{'language_code'};
 	} else { $user_language_code = $language_code;}
+	triggerEvent('join', $jsonData);
 	//code
 	
 }elseif (!strpos($rawData, 'left_chat_member') === false) {
@@ -63,7 +82,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$message_ID = $jsonData->{'message'}->{'message_id'};
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$user = $jsonData->{'message'}->{'left_chat_member'};
-	$user_id = $user->{'id'}};
+	$user_id = $user->{'id'};
 	$user_is_bot = $user->{'is_bot'};
 	$user_first_name = $user->{'first_name'};
 	if (!strpos($user, 'username') === false) {
@@ -71,7 +90,8 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	}
 	if (!strpos($user, 'language_code') === false) {
 		$user_language_code = $user->{'language_code'};
-	} else { $user_language_code = $language_code;}
+	} else { $user_language_code = $language_code; }
+	triggerEvent('leave', $jsonData);
 	//code
 	
 }elseif (!strpos($rawData, 'photo') === false) {
@@ -87,6 +107,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	syslog(LOG_INFO, 'antwort file_id: ' .$file_id);
 	$pic = $apiURL. ''.$file_path;
 	
+	triggerEvent('photo', $jsonData);
 	//Code
 	
 	goto not_for_me;
@@ -96,12 +117,13 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$received_message = $jsonData->{'message'}->{'text'};
 	syslog(LOG_DEBUG, 'Nachricht von: "' .$chat_ID. '" Text: "'.$received_message. '"');
+	triggerEvent('messageRecived', $jsonData);
 }else{
 	// Wat auch immer
 	goto not_for_me;
 }
 
-
+not_for_me:
 
 
 

@@ -1,5 +1,9 @@
 <?php
 
+include 'include.php';
+
+$apiURL = 'https://api.telegram.org/bot'.token.'/';
+
 
 function sendMessage($chat_ID, $message, $message_ID = "NULL")
 	{
@@ -105,7 +109,7 @@ function getMe()
 	$antwort = file_get_contents($URL);
 	syslog(LOG_DEBUG, 'antwort getMe: ' .$antwort);
 	$jsonData = json_decode($antwort);
-	return $jsonData->{'result'}
+	return $jsonData->{'result'};
 	}
 
 
