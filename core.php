@@ -20,14 +20,19 @@ spl_autoload_register(function ($class_name) {
 
 ########################### Load Plugins ###########################
 
-$path    = '/plugins';
+$path    = './plugins';
 $files = scandir($path);
+print_r($files);
 
-foreach ($files as &$pluginFile) {
-	$pluginName = $files;
-	include 'plugins/'.$pluginName . '.php';
-	array_push($plugins, new $pluginName);
+foreach ($files as &$file) {
+	if($file != '.' && $file != '..' && !is_dir('./plugins/'.	$file)){
+		echo $file;
+		$pluginName = trim($file, '.php');
+		include './plugins/'.$pluginName . '.php';
+		array_push($plugins, new $pluginName);
+	}
 }
+print_r($plugins);
 //bla
 
 ####################################################################

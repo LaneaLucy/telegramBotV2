@@ -16,6 +16,8 @@ class testPlugin
 	function __construct() //init
 		{
 		
+		echo "I'm the Plugin";
+		
 		$data = "{'name' : 'testPlugin', 'description' : 'A simple Demonstration', 'commandDescriptions' : [{'command1' : 'This is command1'}, {'command2' : 'Thist is command2'}]}";
 		return $data;
 		}
@@ -34,7 +36,7 @@ class testPlugin
 			break;
 		case "photo":
 			// Do something with the Data
-			break
+			break;
 		default:
 			// Don't handle the event Type
 		}
