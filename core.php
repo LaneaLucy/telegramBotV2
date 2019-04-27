@@ -1,15 +1,20 @@
 <?php
 
 
-include 'include.php';
+//include 'config.php';
 include 'telegramFunctions.php';
+include 'include.php';
+
+//global $apiURL;
 
 
-//$apiURL = 'https://api.telegram.org/bot'.ttoken.'/';
+//$token = '23456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';
+//$apiURL = 'https://api.telegram.org/bot'.$token.'/';
 //$botName = getMe()->{'username'};
 
 
-$plugins = array();
+//global $plugins;
+$plugins = [];
 
 
 /**
@@ -27,7 +32,7 @@ print_r($files);
 foreach ($files as &$file) {
 	if($file != '.' && $file != '..' && !is_dir('./plugins/'.	$file)){
 		echo $file;
-		$pluginName = trim($file, '.php');
+		$pluginName = substr($file, 0, -4);
 		include './plugins/'.$pluginName . '.php';
 		array_push($plugins, new $pluginName);
 	}
@@ -38,10 +43,39 @@ print_r($plugins);
 ####################################################################
 
 
-function triggerEvent($eventType, $data)
+function processPluginResponse($pluginResponse, $data)
+{
+	$pluginResponseArray = explode('|', $pluginResponse);
+	switch ($pluginResponseArray[0]) {
+		case "replay":
+			$message_ID = $data->{'message'}->{'message_id'};
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$message = $pluginResponseArray[1];
+			replayMessage($chat_ID, $message, $message_ID);
+			break;
+		case "join":
+			// Do something with the Data
+			break;
+		case "leave":
+			// Do something with the Data
+			break;
+		case "photo":
+			// Do something with the Data
+			break;
+		default:
+			// Don't handle the event Type
+		}
+	//Code
+}
+
+function triggerEvent($eventType, $data, $plugins)
 {
 	foreach ($plugins as &$plugin) {
-		$plugin.handelEvent($eventType, $data);
+		$response = $plugin->handelEvent($eventType, $data);
+		$responseArray = explode('|+|', $response);
+		foreach ($responseArray as &$pluginResponse) {
+			processPluginResponse($pluginResponse, $data);
+		}
 	}
 	//Code
 }
@@ -122,7 +156,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$received_message = $jsonData->{'message'}->{'text'};
 	syslog(LOG_DEBUG, 'Nachricht von: "' .$chat_ID. '" Text: "'.$received_message. '"');
-	triggerEvent('messageRecived', $jsonData);
+	triggerEvent('messageRecived', $jsonData, $plugins);
 }else{
 	// Wat auch immer
 	goto not_for_me;

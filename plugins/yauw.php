@@ -1,0 +1,33 @@
+<?php
+
+class yauw
+{
+	
+	function __construct() //init
+		{
+		$data = "{'name' : 'yauw', 'description' : 'Programmer's personal Plugin.', 'commandDescriptions' : []}";
+		return $data;
+		}
+	
+	function handelEvent($event, $data)
+	{
+		switch ($event) {
+		case "messageRecived":
+			// Do something with the Data
+			$received_message = $data->{'message'}->{'text'};
+			$fromID = $data->{'message'}->{'from'}->{'id'};
+			if ($received_message == 'yauw' && !$fromID = 25737932) {
+				$answer = "replay|DON'T SAY THIS AGAIN!!! You have not the Permission to do that!";
+				return $answer;
+			}
+			break;
+		default:
+			// Don't handle the event Type
+		}
+	
+	}
+}
+
+
+
+?>

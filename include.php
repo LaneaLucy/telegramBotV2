@@ -1,6 +1,6 @@
 <?php
 
-global $token;
+//global $token;
 global $language_code;
 //global $apiURL;
 global $botName;
