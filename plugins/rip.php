@@ -1,0 +1,32 @@
+<?php
+
+class rip
+{
+	
+	function __construct() //init
+		{
+		$data = "{'name' : 'rip', 'description' : 'Rest in Peace!', 'commandDescriptions' : []}";
+		return $data;
+		}
+	
+	function handelEvent($event, $data)
+	{
+		switch ($event) {
+		case "messageRecived":
+			// Do something with the Data
+			$received_message = $data->{'message'}->{'text'};
+			if ($received_message == 'rip') {
+				$answer = "replay|❀◟(ó ̯ ò, )";
+				return $answer;
+			}
+			break;
+		default:
+			// Don't handle the event Type
+		}
+	
+	}
+}
+
+
+
+?>
