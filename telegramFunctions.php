@@ -121,6 +121,53 @@ function getMe()
 	return $jsonData->{'result'};
 	}
 
+function sendChatAction($chat_ID, $action)
+	{
+	include 'include.php';
+	$URL = $apiURL. 'sendChatAction?chat_id='.$chat_ID.'&action='.$action.'';
+	//syslog(LOG_INFO, 'sendChatAction_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+	syslog(LOG_DEBUG, 'antwort sendChatAction: ' .$antwort);
+	}
+
+function kickChatMember($chat_ID, $user_ID, $until_date)
+	{
+	include 'include.php';
+	$URL = $apiURL. 'kickChatMember?chat_id='.$chat_ID.'&user_id='.$user_ID.'&until_date='.$until_date.'';
+	//syslog(LOG_INFO, 'kickChatMember_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+	syslog(LOG_DEBUG, 'antwort kickChatMember: ' .$antwort);
+	}
+
+function unbanChatMember($chat_ID, $user_ID)
+	{
+	include 'include.php';
+	$URL = $apiURL. 'unbanChatMember?chat_id='.$chat_ID.'&user_id='.$user_ID.'';
+	//syslog(LOG_INFO, 'unbanChatMember_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+	syslog(LOG_DEBUG, 'antwort unbanChatMember: ' .$antwort);
+	}
+
+function leaveChat($chat_ID, $user_ID)
+	{
+	include 'include.php';
+	$URL = $apiURL. 'leaveChat?chat_id='.$chat_ID.'';
+	//syslog(LOG_INFO, 'leaveChat_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+	syslog(LOG_DEBUG, 'antwort leaveChat: ' .$antwort);
+	}
+
+function getChatAdministrators($chat_ID, $user_ID)
+	{
+	include 'include.php';
+	$URL = $apiURL. 'getChatAdministrators?chat_id='.$chat_ID.'';
+	//syslog(LOG_INFO, 'getChatAdministrators_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+	syslog(LOG_DEBUG, 'antwort getChatAdministrators: ' .$antwort);
+	$jsonData = json_decode($antwort);
+	return $jsonData->{'result'};
+	}
+
 
 
 

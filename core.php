@@ -47,20 +47,65 @@ function processPluginResponse($pluginResponse, $data)
 {
 	$pluginResponseArray = explode('|', $pluginResponse);
 	switch ($pluginResponseArray[0]) {
+		case "send":
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$message = $pluginResponseArray[1];
+			sendMessage($chat_ID, $message);
+			break;
 		case "replay":
 			$message_ID = $data->{'message'}->{'message_id'};
 			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
 			$message = $pluginResponseArray[1];
 			replayMessage($chat_ID, $message, $message_ID);
 			break;
-		case "join":
+		case "answer":
 			// Do something with the Data
 			break;
-		case "leave":
+		case "sticker":
 			// Do something with the Data
 			break;
 		case "photo":
 			// Do something with the Data
+			break;
+		case "sendChatAction":
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$action = $pluginResponseArray[1];
+			sendChatAction($chat_ID, $action);
+			break;
+		case "kickChatMember":
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$user_ID = $pluginResponseArray[1];
+			$until_date = $pluginResponseArray[2];
+			kickChatMember($chat_ID, $user_ID, $until_date);
+			break;
+		case "unbanChatMember":
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$user_ID = $pluginResponseArray[1];
+			unbanChatMember($chat_ID, $user_ID);
+			break;
+		case "restrictChatMember":
+			// Do something
+			break;
+		case "promoteChatMember":
+			// Do something
+			break;
+		case "pinChatMessage":
+			// Do something
+			break;
+		case "unpinChatMessage":
+			// Do something
+			break;
+		case "leaveChat":
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			leaveChat($chat_ID);
+			break;
+		case "getChatAdministrators":
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$result = getChatAdministrators($chat_ID);
+			//Do something with result
+			break;
+		case "customeEvent":
+			// Do something
 			break;
 		default:
 			// Don't handle the event Type
@@ -156,7 +201,12 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$received_message = $jsonData->{'message'}->{'text'};
 	syslog(LOG_DEBUG, 'Nachricht von: "' .$chat_ID. '" Text: "'.$received_message. '"');
-	triggerEvent('messageRecived', $jsonData, $plugins);
+	if (strpos($received_message, '/') == 1) {
+		{
+			triggerEvent('command', $jsonData, $plugins);
+		} else {
+			triggerEvent('messageRecived', $jsonData, $plugins);
+		}
 }else{
 	// Wat auch immer
 	goto not_for_me;
