@@ -15,7 +15,7 @@ class rip
 		case "messageRecived":
 			// Do something with the Data
 			$received_message = $data->{'message'}->{'text'};
-			if ($received_message == 'rip') {
+			if ((preg_match('/^((.)* )?r.?i.?p.?( (.)*)?$/i', $received_message)) == 1) {
 				$answer = "replay|❀◟(ó ̯ ò, )";
 				return $answer;
 			}
