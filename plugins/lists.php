@@ -1,8 +1,8 @@
 <?php
 
-class permissions
+class lists
 {
-	var $pluginName = 'permissions';
+	var $pluginName = 'lists';
 	var $description = '';
 	var $commandDescriptions = '[]';
 	
@@ -43,23 +43,16 @@ class permissions
 		return $value;
 	}
 	
-	function checkPermission($userID, $groupID, $permission)
+	function getListItem($list, $item)
 	{
-		$name = $userID.'|'.$groupID;
-		$result = getData('permissions.txt', $name);
+		$result = getData($list, $item);
 		
-		if ($result) {
-			if ($result >= $permission) { return true; }
-		}
-		
-		return false;
+		return $result;
 	}
 	
-	function changePermission($userID, $groupID, $permission)
+	function editListItem($list, $item, $value)
 	{
-		$name = $userID.'|'.$groupID;
-		
-		setData('permissions.txt', $name, $permission);
+		setData($list, $item, $value);
 	}
 	
 	function __construct() //init
@@ -75,18 +68,17 @@ class permissions
 			$dataArray = explode('|', $data);
 			$eventType = $dataArray[0];
 			switch ($eventType) {
-				case 'checkPermission':
-					$userID = $dataArray[1];
-					$groupID = $dataArray[2];
-					$permission = $dataArray[3];
-					$result = checkPermission($userID, $groupID, $permission);
+				case 'getListItem':
+					$list = $dataArray[1];
+					$item = $dataArray[2];
+					$result = getListItem($list, $item);
 					return 'answer|'.$result;
 					break;
-				case 'changePermission':
-					$userID = $dataArray[1];
-					$groupID = $dataArray[2];
-					$permission = $dataArray[3];
-					$result = changePermission($userID, $groupID, $permission);
+				case 'editListItem':
+					$list = $dataArray[1];
+					$item = $dataArray[2];
+					$value = $dataArray[3];
+					$result = editListItem($list, $item, $value);
 					return 'answer|'.$result;
 					break;
 				default:

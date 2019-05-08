@@ -1,8 +1,8 @@
 <?php
 
-class permissions
+class groups
 {
-	var $pluginName = 'permissions';
+	var $pluginName = 'groups';
 	var $description = '';
 	var $commandDescriptions = '[]';
 	
@@ -43,23 +43,36 @@ class permissions
 		return $value;
 	}
 	
-	function checkPermission($userID, $groupID, $permission)
+	function checkGroups($userID, $group)
 	{
-		$name = $userID.'|'.$groupID;
-		$result = getData('permissions.txt', $name);
+		$name = $group;
+		$result = getData('groups.txt', $name);
 		
 		if ($result) {
-			if ($result >= $permission) { return true; }
+			if (!strpos($rawData, $name) === false) { return true; }
 		}
 		
 		return false;
 	}
 	
-	function changePermission($userID, $groupID, $permission)
+	function delUserfromGroup($userID, $group)
 	{
-		$name = $userID.'|'.$groupID;
+		$name = $group;
 		
-		setData('permissions.txt', $name, $permission);
+		$result = getData('groups.txt', $name);
+		$newResult = str_replace($userID."\r\n", "", $result);
+		
+		setData('groups.txt', $name, $newResult);
+	}
+	
+	function addUserToGroup($userID, $group)
+	{
+		$name = $group;
+		
+		$result = getData('groups.txt', $name);
+		$result .= $userID."\r\n";
+		
+		setData('groups.txt', $name, $result);
 	}
 	
 	function __construct() //init
@@ -75,18 +88,22 @@ class permissions
 			$dataArray = explode('|', $data);
 			$eventType = $dataArray[0];
 			switch ($eventType) {
-				case 'checkPermission':
+				case 'checkGroups':
 					$userID = $dataArray[1];
-					$groupID = $dataArray[2];
-					$permission = $dataArray[3];
-					$result = checkPermission($userID, $groupID, $permission);
+					$group = $dataArray[2];
+					$result = checkGroups($userID, $group);
 					return 'answer|'.$result;
 					break;
-				case 'changePermission':
+				case 'addUserToGroup':
 					$userID = $dataArray[1];
-					$groupID = $dataArray[2];
-					$permission = $dataArray[3];
-					$result = changePermission($userID, $groupID, $permission);
+					$group = $dataArray[2];
+					$result = addUserToGroup($userID, $group);
+					return 'answer|'.$result;
+					break;
+				case 'delUserfromGroup':
+					$userID = $dataArray[1];
+					$group = $dataArray[2];
+					$result = delUserfromGroup($userID, $group);
 					return 'answer|'.$result;
 					break;
 				default:

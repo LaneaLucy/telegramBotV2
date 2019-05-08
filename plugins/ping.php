@@ -9,7 +9,7 @@ class ping
 		return $data;
 		}
 	
-	function handelEvent($event, $data)
+	function handelEvent($event, $data, $obj)
 	{
 		switch ($event) {
 		case "messageRecived":

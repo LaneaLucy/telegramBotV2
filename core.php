@@ -104,8 +104,12 @@ function processPluginResponse($pluginResponse, $data)
 			$result = getChatAdministrators($chat_ID);
 			//Do something with result
 			break;
+		case "getMe":
+			return getMe();
+			break;
 		case "customeEvent":
 			// Do something
+			return false;
 			break;
 		default:
 			// Don't handle the event Type
@@ -115,8 +119,13 @@ function processPluginResponse($pluginResponse, $data)
 
 function triggerEvent($eventType, $data, $plugins)
 {
+	$obj = new stdClass();
+	$obj->process = function ($param, $data) {
+		return processPluginResponse($param, $data);
+	};
+	
 	foreach ($plugins as &$plugin) {
-		$response = $plugin->handelEvent($eventType, $data);
+		$response = $plugin->handelEvent($eventType, $data, $obj);
 		$responseArray = explode('|+|', $response);
 		foreach ($responseArray as &$pluginResponse) {
 			processPluginResponse($pluginResponse, $data);
@@ -201,12 +210,12 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$received_message = $jsonData->{'message'}->{'text'};
 	syslog(LOG_DEBUG, 'Nachricht von: "' .$chat_ID. '" Text: "'.$received_message. '"');
-	if (strpos($received_message, '/') == 1) {
-		{
-			triggerEvent('command', $jsonData, $plugins);
-		} else {
-			triggerEvent('messageRecived', $jsonData, $plugins);
-		}
+	if (strpos($received_message, '/') === 0)
+	{
+		triggerEvent('command', $jsonData, $plugins);
+	} else {
+		triggerEvent('messageRecived', $jsonData, $plugins);
+	}
 }else{
 	// Wat auch immer
 	goto not_for_me;
