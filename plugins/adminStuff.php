@@ -53,9 +53,15 @@ class adminStuff
 	
 	function addOrganAdmin($userID, $organ)
 	{
-		$result = $this->getData('organList_'.$organ.'.txt', 'admins');
-		$result .= '|'.$userID;
-		$this->setData('organList_'.$organ.'.txt', 'admins', $result);
+		$rawData = $this->getData('organList_'.$organ.'.txt', 'admins');
+		
+		$jsonData = json_decode($rawData, true);
+		if ($rawData == false) { $jsonData = array(); }
+		array_push($jsonData, $userID);
+		$rawData = json_encode($jsonData);
+		//$rawData .= '|'.$userID;
+		
+		$this->setData('organList_'.$organ.'.txt', 'admins', $rawData);
 	}
 	
 	function createOrgan($userID, $organName)
@@ -93,7 +99,6 @@ again:
 		if ($chat_type == 'private')
 		{
 			$result = $this->getData('selectedOrganList.txt', '' .$from. '');
-			$processer('replay|Result is "'.$result.'"', $data);
 			if ($result == false) {
 				$processer("replay|Please select a Organisation with /selectOrgan <organisation_name>", $data);
 				return 0;
@@ -103,7 +108,7 @@ again:
 			}
 		} else {
 			$result = $this->getData('groupOrganList.txt', $chat_ID);
-			if ($result === false) {
+			if ($result == false) {
 				$processer("replay|This Group or SuperGroup is in no Organisation!", $data);
 				return 0;
 			} else {
@@ -124,12 +129,16 @@ again:
 	{
 		if ($organ == 0) return false;
 		
-		$result = $this->getData('organList_'.$organ.'.txt', 'admins');
+		$rawData = $this->getData('organList_'.$organ.'.txt', 'admins');
 		
-		if (!strpos($result, $userID) === false) {
-			return true;
-			
-		} 
+		$jsonData = json_decode($rawData, true);
+		
+		foreach ($jsonData as &$admin) {
+			if ($userID == $admin) {
+				return true;
+				break;
+			}
+		}
 		
 		return false;
 	}
@@ -188,7 +197,7 @@ again:
 		setData('groups.txt', $name, $result);
 	}
 	
-	function admin($userID, $group, $processer)
+	function admin($userID, $organ, $processer)
 	{
 		$name = $group;
 		
@@ -402,6 +411,15 @@ again:
 					}
 					break;
 				case '/createOrgan':
+					$chat_type = $data->{'message'}->{'chat'}->{'type'};
+					if ($chat_type == 'private') 
+					{
+						$organName = $dataArray[1];
+						return $this->createOrgan($from, $organName);
+						
+					} else { return "replay|Please message me directly to do that."; }
+					break;
+				case '/addOrganAdmin':
 					$chat_type = $data->{'message'}->{'chat'}->{'type'};
 					if ($chat_type == 'private') 
 					{
