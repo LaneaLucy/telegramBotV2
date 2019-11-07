@@ -16,7 +16,7 @@ class adminStuff
 		if(!is_dir('./plugins/pluginDatas/'.$this->pluginName.'/'))	{ mkdir('./plugins/pluginDatas/'.$this->pluginName.'/', 0755, true); }
 		if(!is_file('./plugins/pluginDatas/'.$this->pluginName.'/'.$file))	{ file_put_contents('./plugins/pluginDatas/'.$this->pluginName.'/'.$file, ''); }
 		$rawData = file_get_contents('./plugins/pluginDatas/'.$this->pluginName.'/'.$file);
-		$jsonData = json_decode($rawData);
+		$jsonData = json_decode($rawData, true);
 		
 		ob_start();
 		var_dump($jsonData);
@@ -39,9 +39,13 @@ class adminStuff
 		var_dump($jsonData);
 		$result = ob_get_clean();
 		
-		if (strpos($rawData, $name) === false) {
+		//error_log($result, 0);
+		
+		if (strpos($result, $name) === false) {
 			return false;
 		}
+		//error_log("test", 0);
+		
 		$value = $jsonData->{$name};
 		
 		return $value;
@@ -88,8 +92,9 @@ again:
 		$from = $data->{'message'}->{'from'}->{'id'};
 		if ($chat_type == 'private')
 		{
-			$result = $this->getData('selectedOrganList.txt', $from);
-			if ($result === false) {
+			$result = $this->getData('selectedOrganList.txt', '' .$from. '');
+			$processer('replay|Result is "'.$result.'"', $data);
+			if ($result == false) {
 				$processer("replay|Please select a Organisation with /selectOrgan <organisation_name>", $data);
 				return 0;
 			} else { 
@@ -299,6 +304,11 @@ again:
 			switch ($command) {
 				case '/ban':
 					$organ = $this->getOrgan($data, $processer);
+					if ($organ == 0)
+					{
+						return 'replay|You have not set a Organisation!';
+						break;
+					}
 					if (!$this->checkPermission($from, $organ))
 					{
 						return 'replay|You have not the permissions to do that';
@@ -361,7 +371,7 @@ again:
 						break;
 					}
 					$this->setData('selectedOrganList.txt', $from, $organ);
-					return 'replay|Organisation "'.$organ.'" is selected now';
+					return 'replay|Organisation "'.$organ.'" aka "'.$organName.'" is selected now';
 					break;
 				case '/setOrgan':
 					$chat_type = $data->{'message'}->{'chat'}->{'type'};
