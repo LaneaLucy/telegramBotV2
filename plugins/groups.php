@@ -76,10 +76,10 @@ class groups
 	}
 	
 	function __construct() //init
-		{
+	{
 		$data = "{'pluginName' : '".$this->pluginName."', 'description' : '".$this->description."', 'commandDescriptions' : ".$this->commandDescriptions."}";
 		return $data;
-		}
+	}
 	
 	function handelEvent($event, $data, $obj)
 	{

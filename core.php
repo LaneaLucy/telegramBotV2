@@ -102,7 +102,7 @@ function processPluginResponse($pluginResponse, $data)
 		case "getChatAdministrators":
 			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
 			$result = getChatAdministrators($chat_ID);
-			//Do something with result
+			return $result;
 			break;
 		case "getMe":
 			return getMe();
@@ -156,6 +156,9 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	goto not_for_me;
 	$message_ID = $jsonData->{'message'}->{'message_id'};
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
+	if (!strpos($user, 'username') === false) {
+		$FromUser = $jsonData->{'message'}->{'from'};
+	}
 	$user = $jsonData->{'message'}->{'new_chat_member'};
 	$user_id = $user->{'id'};
 	$user_is_bot = $user->{'is_bot'};
@@ -166,7 +169,12 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	if (!strpos($user, 'language_code') === false) {
 		$user_language_code = $user->{'language_code'};
 	} else { $user_language_code = $language_code;}
-	triggerEvent('join', $jsonData);
+	if ($user_id == getMe()->{'id'}) 
+	{
+		triggerEvent('botAdded', $jsonData);
+	} else {
+		triggerEvent('join', $jsonData);
+	}
 	//code
 	
 }elseif (!strpos($rawData, 'left_chat_member') === false) {
@@ -212,7 +220,16 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	syslog(LOG_DEBUG, 'Nachricht von: "' .$chat_ID. '" Text: "'.$received_message. '"');
 	if (strpos($received_message, '/') === 0)
 	{
-		triggerEvent('command', $jsonData, $plugins);
+		if (!strpos($received_message, '@') === false) 
+		{
+			$username = getMe()->{'username'};
+			if (!strpos($received_message, $username) === false) 
+			{
+				triggerEvent('command', $jsonData, $plugins);
+			}
+		} else {
+			triggerEvent('command', $jsonData, $plugins);
+		}
 	} else {
 		triggerEvent('messageRecived', $jsonData, $plugins);
 	}

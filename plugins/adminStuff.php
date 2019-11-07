@@ -7,7 +7,7 @@ class adminStuff
 	
 	var $pluginName = 'adminStuff';
 	var $description = '';
-	var $commandDescriptions = '[]';
+	var $commandDescriptions = "[{'/selectOrgan' : 'Select a Organisation'}, {'/ban <reason>' : 'ban the User from the replayed message'}]";
 	
 	function setData($file, $name, $value)
 	{
@@ -31,6 +31,7 @@ class adminStuff
 	
 	function getData($file, $name)
 	{
+		if(!is_file('./plugins/pluginDatas/'.$this->pluginName.'/'.$file))	{ file_put_contents('./plugins/pluginDatas/'.$this->pluginName.'/'.$file, ''); }
 		$rawData = file_get_contents('./plugins/pluginDatas/'.$this->pluginName.'/'.$file);
 		$jsonData = json_decode($rawData);
 		
@@ -46,6 +47,40 @@ class adminStuff
 		return $value;
 	}
 	
+	function addOrganAdmin($userID, $organ)
+	{
+		$result = $this->getData('organList_'.$organ.'.txt', 'admins');
+		$result .= '|'.$userID;
+		$this->setData('organList_'.$organ.'.txt', 'admins', $result);
+	}
+	
+	function createOrgan($userID, $organName)
+	{
+		$result = $this->getData('organNameList.txt', $organName);
+		if ($result === false) {
+			//Frei
+again:
+			$newOrgan = rand(0, 184467440737095516);
+			$result = $this->getData('organList_'.$newOrgan.'.txt', 'admins');
+			if (!$result === false) { goto again; }
+			$this->addOrganAdmin($userID, $newOrgan);
+			$this->setData('organNameList.txt', $organName, $newOrgan);
+			return 'replay|Organisation sucessfully created';
+		} else { 
+			return 'replay|Organisation Name already exist';
+		}
+	}
+	
+	function getOrganID($organName)
+	{
+		$result = $this->getData('organNameList.txt', $organName);
+		if ($result === false) {
+			return 0;
+		} else { 
+			return $result;
+		}
+	}
+	
 	function getOrgan($data, $processer)
 	{
 		$chat_ID = $data->{'message'}->{'chat'}->{'id'};
@@ -55,29 +90,41 @@ class adminStuff
 		{
 			$result = $this->getData('selectedOrganList.txt', $from);
 			if ($result === false) {
-				$processer("replay|Please select a Organisation with /selectOrgan <your_Organisation_ID>", $data);
+				$processer("replay|Please select a Organisation with /selectOrgan <organisation_name>", $data);
 				return 0;
 			} else { 
 				$processer('replay|Organisation "'.$result.'" is selected', $data);
 				return $result;
 			}
 		} else {
-			return $chat_ID;
+			$result = $this->getData('groupOrganList.txt', $chat_ID);
+			if ($result === false) {
+				$processer("replay|This Group or SuperGroup is in no Organisation!", $data);
+				return 0;
+			} else {
+				return $result;
+			}
 		}
 		return false;
 	}
 	
+	function setGroupOrgan($organ, $chat_ID)
+	{	
+		if ($organ == 0) return false;
+		
+		$this->setData('groupOrganList.txt', $chat_ID, $organ);
+	}
+	
 	function checkPermission($userID, $organ)
 	{
-		//include 'groups.php';
-		
 		if ($organ == 0) return false;
 		
 		$result = $this->getData('organList_'.$organ.'.txt', 'admins');
 		
-		if (strpos($result, $userID) === false) {
-			return false;
-		} else { return true; }
+		if (!strpos($result, $userID) === false) {
+			return true;
+			
+		} 
 		
 		return false;
 	}
@@ -244,6 +291,11 @@ class adminStuff
 			{
 				$reply_to_message_from = $data->{'message'}->{'reply_to_message'}->{'from'}->{'id'};
 			}
+			if (!strpos($command, '@') === false) 
+			{
+				$commandArray = explode('@', $command);
+				$command = $commandArray[0];
+			}
 			switch ($command) {
 				case '/ban':
 					$organ = $this->getOrgan($data, $processer);
@@ -301,9 +353,53 @@ class adminStuff
 					return 'answer|'.$result;
 					break;
 				case '/selectOrgan':
-					$organ = $dataArray[1];
+					$organName = $dataArray[1];
+					$organ = $this->getOrganID($organName);
+					if ($organ == 0) 
+					{ 
+						$processer('replay|Can\'t find Organisation "'.$organName.'"', $data);
+						break;
+					}
 					$this->setData('selectedOrganList.txt', $from, $organ);
 					return 'replay|Organisation "'.$organ.'" is selected now';
+					break;
+				case '/setOrgan':
+					$chat_type = $data->{'message'}->{'chat'}->{'type'};
+					if ($chat_type == 'group' OR $chat_type == 'supergroup') 
+					{
+						$ChatAdministrators = $processer('getChatAdministrators|', $data);
+						foreach ($ChatAdministrators as &$admin) {
+							if ($from == $admin->{'user'}->{'id'}) {
+								$organName = $dataArray[1];
+								$organ = $this->getOrganID($organName);
+								$processer('replay|organ "'.$organ.'"', $data);
+								$processer('replay|from "'.$from.'"', $data);
+								if ($this->checkPermission($from, $organ))
+								{
+									//$this->setGroupOrgan($organ, $chat_ID);
+									break;
+								} else {
+									return 'replay|You have for "'.$organName.'" not the organisation permissions to do that';
+									break;
+								}
+								
+							}
+						}
+						return 'replay|You have not the groupPermissions to do that';
+						break;
+					} else {
+						return 'replay|Please do this in a group or supergroup';
+					}
+					break;
+				case '/createOrgan':
+					$chat_type = $data->{'message'}->{'chat'}->{'type'};
+					if ($chat_type == 'private') 
+					{
+						$organName = $dataArray[1];
+						return $this->createOrgan($from, $organName);
+						
+					} else { return "replay|Please message me directly to do that."; }
+					break;
 				case '/test':
 					$processer("send|debugshit", $data);
 					break;

@@ -157,7 +157,7 @@ function leaveChat($chat_ID, $user_ID)
 	syslog(LOG_DEBUG, 'antwort leaveChat: ' .$antwort);
 	}
 
-function getChatAdministrators($chat_ID, $user_ID)
+function getChatAdministrators($chat_ID)
 	{
 	include 'include.php';
 	$URL = $apiURL. 'getChatAdministrators?chat_id='.$chat_ID.'';
