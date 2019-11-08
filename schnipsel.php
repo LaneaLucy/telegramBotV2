@@ -84,3 +84,35 @@ not_for_me:
 
 
 //###############################################################################################################################
+
+
+foreach ($ChatAdministrators as &$admin) {
+							if ($from == $admin->{'user'}->{'id'}) {
+								$organName = $dataArray[1];
+								$organ = $this->getOrganID($organName);
+								$processer('replay|organ "'.$organ.'"', $data);
+								$processer('replay|from "'.$from.'"', $data);
+								if ($this->checkPermission($from, $organ))
+								{
+									//$this->setGroupOrgan($organ, $chat_ID);
+									break;
+								} else {
+									return 'replay|You have for "'.$organName.'" not the organisation permissions to do that';
+									break;
+								}
+								
+							}
+						}
+
+
+//###############################################################################################################################
+
+
+
+
+
+
+
+
+
+
