@@ -26,7 +26,9 @@ class adminStuff
 		
 		$rawData = json_encode($jsonData);
 		
-		file_put_contents('./plugins/pluginDatas/'.$this->pluginName.'/'.$file, $rawData);
+		if (!file_put_contents('./plugins/pluginDatas/'.$this->pluginName.'/'.$file, $rawData) == false) {return true; }
+		
+		return false;
 	}
 	
 	function getData($file, $name)
@@ -122,7 +124,7 @@ again:
 	{	
 		if ($organ == 0) return false;
 		
-		$this->setData('groupOrganList.txt', $chat_ID, $organ);
+		return $this->setData('groupOrganList.txt', $chat_ID, $organ);
 	}
 	
 	function checkPermission($userID, $organ)
@@ -323,8 +325,15 @@ again:
 						return 'replay|You have not the permissions to do that';
 						break;
 					}
-					$userID = $reply_to_message_from;
-					$reason = $dataArray[1];
+					$aruments = count($dataArray);
+					if ($aruments < 2) { return 'replay|Not enough Arguments'; }
+					else if ($aruments = 2) {
+						$reason = $dataArray[1];
+						$userID = $reply_to_message_from;
+					} else if ($aruments >= 3) {
+						$reason = $dataArray[1];
+						$userID = $dataArray[2];  //benutzername auflösen
+					}
 					return $this->ban($userID, $group, $reason, $processer);
 					break;
 				case 'unban':
@@ -391,11 +400,23 @@ again:
 							if ($from == $admin->{'user'}->{'id'}) {
 								$organName = $dataArray[1];
 								$organ = $this->getOrganID($organName);
-								$processer('replay|organ "'.$organ.'"', $data);
-								$processer('replay|from "'.$from.'"', $data);
+								//$processer('replay|organ "'.$organ.'"', $data);
+								//$processer('replay|from "'.$from.'"', $data);
+								if ($organ == 0)
+								{
+									return 'replay|Organisation "'.$organName.'" dont exist!';
+									break;
+								}
 								if ($this->checkPermission($from, $organ))
 								{
-									//$this->setGroupOrgan($organ, $chat_ID);
+									//return 'replay|acces granted but function is work in progress';
+									if (!$this->setGroupOrgan($organ, $chat_ID)) 
+									{ 
+										return 'replay|Internal ERROR!'; 
+									} else {
+										return 'replay|Successfully selected organ "'.$organ.'"';
+									}
+									
 									break;
 								} else {
 									return 'replay|You have for "'.$organName.'" not the organisation permissions to do that';
