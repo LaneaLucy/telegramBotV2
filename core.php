@@ -146,6 +146,7 @@ var_dump($jsonData);
 $result = ob_get_clean();
 
 syslog(LOG_DEBUG, 'rawData: ' .$rawData);
+//error_log('rawData: ' .$rawData);
 
 ########################### process Data ###########################
 
@@ -218,21 +219,40 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
 	$received_message = $jsonData->{'message'}->{'text'};
 	syslog(LOG_DEBUG, 'Nachricht von: "' .$chat_ID. '" Text: "'.$received_message. '"');
-	if (strpos($received_message, '/') === 0)
-	{
-		if (!strpos($received_message, '@') === false) 
+	
+	if (!strpos($rawData, '"entities":[') === false)
+	{ //entities in message
+		$entities = $jsonData->{'message'}->{'entities'};
+		//error_log('entities: ');
+		foreach ($entities as &$entitie)
 		{
-			$username = getMe()->{'username'};
-			if (!strpos($received_message, $username) === false) 
-			{
-				triggerEvent('command', $jsonData, $plugins);
+			$entitie_type = $entitie->{'type'};
+			//error_log('entitie_type: ' .$entitie_type);
+			if ($entitie_type == 'bot_command')
+			{ //entitie is command
+				$entitie_offset = $entitie->{'offset'};
+				$entitie_length = $entitie->{'length'};
+				$entitie_content = substr($received_message, $entitie_offset, $entitie_length);
+				//error_log('entitie_content: ' .$entitie_content);
+				if (!strpos($entitie_content, '@') === false) 
+				{
+					$username = getMe()->{'username'};
+					if (!strpos($entitie_content, $username) === false) 
+					{
+						triggerEvent('command', $jsonData, $plugins);
+						break;
+					}
+				} else {
+					triggerEvent('command', $jsonData, $plugins);
+					break;
+				}
 			}
-		} else {
-			triggerEvent('command', $jsonData, $plugins);
+			triggerEvent('messageRecived', $jsonData, $plugins);
 		}
 	} else {
 		triggerEvent('messageRecived', $jsonData, $plugins);
 	}
+
 }else{
 	// Wat auch immer
 	goto not_for_me;
