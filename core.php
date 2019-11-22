@@ -65,7 +65,13 @@ function processPluginResponse($pluginResponse, $data)
 			// Do something with the Data
 			break;
 		case "photo":
+			// TODO: replay
 			// Do something with the Data
+			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
+			$photo = $pluginResponseArray[1];
+			$file = $photo;
+			//sendPhoto($chat_ID, $file, $message_ID = "NULL");
+			sendPhoto($chat_ID, $file);
 			break;
 		case "sendChatAction":
 			$chat_ID = $data->{'message'}->{'chat'}->{'id'};

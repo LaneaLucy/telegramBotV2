@@ -39,6 +39,24 @@ function replayMessage($chat_ID, $message, $message_ID)
 function sendPhoto($chat_ID, $file, $message_ID = "NULL")
 	{
 	include 'include.php';
+	if ($message_ID = "NULL"){
+		$URL = $apiURL. 'sendPhoto?chat_id='.$chat_ID.'&photo='.$file.'';
+	}else{
+		$URL = $apiURL. 'sendPhoto?chat_id='.$chat_ID.'&photo='.$file.'&reply_to_message_id='.$message_ID.'';
+	}
+	
+	syslog(LOG_DEBUG, 'replay_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+		
+	syslog(LOG_DEBUG, 'antwort sendPhoto: ' .$antwort);
+	error_log('antwort sendPhoto: ' .$antwort);
+		
+	}
+
+function uploadAndSendPhoto($chat_ID, $file, $message_ID = "NULL")
+	{
+	include 'include.php';
+	//TODO: Testing
 		$url = $apiURL. 'sendPhoto';
 		$header = array('Content-Type: multipart/form-data');
 		
@@ -63,6 +81,7 @@ function sendPhoto($chat_ID, $file, $message_ID = "NULL")
 		curl_close($resource);
 		
 		syslog(LOG_DEBUG, 'antwort sendPhoto: ' .$antwort);
+		error_log('antwort sendPhoto: ' .$antwort);
 		
 	}
 
