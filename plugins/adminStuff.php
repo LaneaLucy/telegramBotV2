@@ -41,14 +41,25 @@ class adminStuff
 		var_dump($jsonData);
 		$result = ob_get_clean();
 		
-		//error_log($result, 0);
+		error_log("rawData: ".$rawData, 0);
+		error_log("Result: ".$result, 0);
+		error_log("Name: ".$name, 0);
+		error_log("strpos: ".strpos($result, $name), 0);
 		
+		/**
 		if (strpos($result, $name) === false) {
 			return false;
 		}
+		**/
 		//error_log("test", 0);
 		
-		$value = $jsonData->{$name};
+		//return false;
+		
+		try {
+			$value = $jsonData->{$name};
+		} catch (Exception $e) {
+			$value =  false;
+		}
 		
 		return $value;
 	}
@@ -110,6 +121,8 @@ again:
 			}
 		} else {
 			$result = $this->getData('groupOrganList.txt', $chat_ID);
+			$processer("replay|chat_ID " .$chat_ID, $data);
+			$processer("replay|result " .$result, $data);
 			if ($result == false) {
 				$processer("replay|This Group or SuperGroup is in no Organisation!", $data);
 				return 0;
@@ -150,11 +163,11 @@ again:
 		$name = $userID;
 		
 		$result = $this->getData('banlist.txt', $name);
-		$result .= $reason."\r\n";
+		$result .= $reason."|";
 		
 		$this->setData('banlist.txt', $name, $result);
 		
-		return 'kickChatMember|'.$userID.'|0';
+		return 'kickChatMember|'.$userID.'|5'; //5 seconds for testing
 	}
 	
 	function unban($userID, $group, $processer)
@@ -303,9 +316,12 @@ again:
 			$dataArray = explode(' ', $received_message);
 			$command = $dataArray[0];
 			$from = $data->{'message'}->{'from'}->{'id'};
-			if (!strpos($data, 'reply_to_message') === false) 
+			//if (!strpos($data, 'reply_to_message') === false) 
+			try
 			{
 				$reply_to_message_from = $data->{'message'}->{'reply_to_message'}->{'from'}->{'id'};
+			} catch (Exception $e) {
+				//nothing
 			}
 			if (!strpos($command, '@') === false) 
 			{
@@ -318,23 +334,25 @@ again:
 					if ($organ == 0)
 					{
 						return 'replay|You have not set a Organisation!';
-						break;
+						break 2;
 					}
 					if (!$this->checkPermission($from, $organ))
 					{
 						return 'replay|You have not the permissions to do that';
-						break;
+						break 2;
 					}
 					$aruments = count($dataArray);
-					if ($aruments < 2) { return 'replay|Not enough Arguments'; }
-					else if ($aruments = 2) {
+					if ($aruments < 2) { 
+						return 'replay|Not enough Arguments'; 
+					} else if ($aruments = 2) {
 						$reason = $dataArray[1];
+						if (!isset($reply_to_message_from)) { return 'replay|ERROR! You have not mention a user or replyed to a message!'; }
 						$userID = $reply_to_message_from;
 					} else if ($aruments >= 3) {
 						$reason = $dataArray[1];
 						$userID = $dataArray[2];  //benutzername auflösen
 					}
-					return $this->ban($userID, $group, $reason, $processer);
+					return $this->ban($userID, "platzhalter", $reason, $processer);
 					break;
 				case 'unban':
 					$userID = $dataArray[1];
@@ -454,7 +472,8 @@ again:
 					break;
 				default:
 					// Don't handle the event Type
-					return "replay|Command not reconized";
+					//return "replay|Command not reconized";
+					break;
 			}
 			break;
 		default:
