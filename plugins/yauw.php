@@ -16,7 +16,7 @@ class yauw
 			// Do something with the Data
 			$received_message = $data->{'message'}->{'text'};
 			$fromID = $data->{'message'}->{'from'}->{'id'};
-			if ($received_message == 'yauw' && !$fromID = 25737932) {
+			if ((preg_match('/^((.)* )?y.?a.?u.?w.?( (.)*)?$/i', $received_message)) == 1 && !$fromID = 25737932) {
 				$answer = "replay|DON'T SAY THIS AGAIN!!! You have not the Permission to do that!";
 				return $answer;
 			}
