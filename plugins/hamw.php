@@ -15,11 +15,11 @@ class hamw
 		case "command":
 			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
 			$received_message = $data->{'message'}->{'text'};
-			$dataArray = explode(' ', $received_message);
+			$dataArray = explode(' ', $data->{'command'});
 			$command = $dataArray[0];
 			// Do something with the Data
 			$from = $data->{'message'}->{'from'}->{'id'};
-			if ($received_message == '/hamw') {
+			if ($command == '/hamw') {
 				$answer = "photo|http://www.hamqsl.com/solar101vhf.php";
 				//$answer = "replay|hamw";
 				return $answer;

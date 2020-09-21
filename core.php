@@ -232,26 +232,35 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	if (!strpos($rawData, '"entities":[') === false)
 	{ //entities in message
 		$entities = $jsonData->{'message'}->{'entities'};
-		//error_log('entities: ');
+		//error_log('entities: ', 0);
 		foreach ($entities as &$entitie)
 		{
 			$entitie_type = $entitie->{'type'};
-			//error_log('entitie_type: ' .$entitie_type);
+			//error_log('entitie_type: ' .$entitie_type, 0);
 			if ($entitie_type == 'bot_command')
 			{ //entitie is command
 				$entitie_offset = $entitie->{'offset'};
 				$entitie_length = $entitie->{'length'};
 				$entitie_content = substr($received_message, $entitie_offset, $entitie_length);
-				//error_log('entitie_content: ' .$entitie_content);
+				//error_log('entitie_content: ' .$entitie_content, 0);
 				if (!strpos($entitie_content, '@') === false) 
 				{
+					//error_log('Bot specific entitie', 0);
 					$username = getMe()->{'username'};
+					//error_log('Bot username: '.$username, 0);
+					$commandPos = 0;
+					$usernamePos = strpos($entitie_content, $username);
+					$command = substr($entitie_content, 0, $usernamePos - 1);
+					error_log("command: ".$command, 0);
 					if (!strpos($entitie_content, $username) === false) 
 					{
+						error_log('entitie is for me', 0);
+						$jsonData->{'command'} = $command;
 						triggerEvent('command', $jsonData, $plugins);
 						break;
 					}
 				} else {
+					$jsonData->{'command'} = $entitie_content;
 					triggerEvent('command', $jsonData, $plugins);
 					break;
 				}

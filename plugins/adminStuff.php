@@ -167,7 +167,8 @@ again:
 		
 		$this->setData('banlist.txt', $name, $result);
 		
-		return 'kickChatMember|'.$userID.'|5'; //5 seconds for testing
+		return 'kickChatMember|'.$userID.'|0';
+		return 'kickChatMember|'.$userID.'|'.time() + (60); //60 seconds for testing
 	}
 	
 	function unban($userID, $group, $processer)
@@ -313,7 +314,7 @@ again:
 		case "command":
 			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
 			$received_message = $data->{'message'}->{'text'};
-			$dataArray = explode(' ', $received_message);
+			$dataArray = explode(' ', $data->{'command'});
 			$command = $dataArray[0];
 			$from = $data->{'message'}->{'from'}->{'id'};
 			//if (!strpos($data, 'reply_to_message') === false) 

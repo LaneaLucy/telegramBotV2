@@ -75,6 +75,20 @@ class testPlugin
 		case "photo":
 			// Do something with the Data
 			break;
+		case "command":
+			$dataArray = explode(' ', $data->{'command'});
+			$command = $dataArray[0];
+			// Do something with the Data
+			switch ($command) {
+				case "command1":
+					// Do something with the Data
+					break;
+				case "command2":
+					// Do something with the Data
+					break;
+				default:
+					// Don't handle the event Type
+			}
 		default:
 			// Don't handle the event Type
 		}
