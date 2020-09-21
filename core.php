@@ -27,17 +27,20 @@ spl_autoload_register(function ($class_name) {
 
 $path    = './plugins';
 $files = scandir($path);
-print_r($files);
+//print_r($files);
+
 
 foreach ($files as &$file) {
-	if($file != '.' && $file != '..' && !is_dir('./plugins/'.	$file)){
-		echo $file;
+	$pluginNameEnding = substr($file, -4, 4);
+	//print "PluginNameEnding: ".$pluginNameEnding."\n<br>";
+	if($file != '.' && $file != '..' && !is_dir('./plugins/'.	$file) && ($pluginNameEnding == ".php")){
+		//echo $file."\n<br>";
 		$pluginName = substr($file, 0, -4);
 		include './plugins/'.$pluginName . '.php';
 		array_push($plugins, new $pluginName);
 	}
 }
-print_r($plugins);
+//print_r($plugins);
 //bla
 
 ####################################################################
@@ -152,7 +155,7 @@ var_dump($jsonData);
 $result = ob_get_clean();
 
 syslog(LOG_DEBUG, 'rawData: ' .$rawData);
-//error_log('rawData: ' .$rawData);
+//error_log('rawData: ' .$rawData, 0);
 
 ########################### process Data ###########################
 
