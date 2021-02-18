@@ -69,7 +69,6 @@ function processPluginResponse($pluginResponse, $data)
 			break;
 		case "photo":
 			// TODO: replay
-			// Do something with the Data
 			$chat_ID = $data->{'message'}->{'chat'}->{'id'};
 			$photo = $pluginResponseArray[1];
 			$file = $photo;
@@ -116,6 +115,12 @@ function processPluginResponse($pluginResponse, $data)
 		case "getMe":
 			return getMe();
 			break;
+		case "getFileById":
+			return getFileById($pluginResponseArray[1]);
+			break;
+		case "getFile":
+			return getFile($pluginResponseArray[1]);
+			break;
 		case "customeEvent":
 			// Do something
 			return false;
@@ -156,12 +161,29 @@ $result = ob_get_clean();
 
 syslog(LOG_DEBUG, 'rawData: ' .$rawData);
 //error_log('rawData: ' .$rawData, 0);
+file_put_contents('./rawData', $rawData);
 
 ########################### process Data ###########################
 
 $update_id = $jsonData->{'update_id'};
 
-if (!strpos($rawData, 'new_chat_member') === false) {
+if (!strpos($rawData, 'passport_data') === false) {
+	// PassportData
+	//goto not_for_me;
+	$message_ID = $jsonData->{'message'}->{'message_id'};
+	$chat_ID = $jsonData->{'message'}->{'chat'}->{'id'};
+	//if (!strpos($user, 'username') === false) {
+	//	$FromUser = $jsonData->{'message'}->{'from'};
+	//}
+	
+	//$data = $jsonData->{'message'}->{'passport_data'}->{'data'};
+	//$credentials = $jsonData->{'message'}->{'passport_data'}->{'credentials'};
+	
+	triggerEvent('passport', $jsonData, $plugins);
+	
+	//code
+	
+}elseif (!strpos($rawData, 'new_chat_member') === false) {
 	// join Message
 	goto not_for_me;
 	$message_ID = $jsonData->{'message'}->{'message_id'};
@@ -181,9 +203,9 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	} else { $user_language_code = $language_code;}
 	if ($user_id == getMe()->{'id'}) 
 	{
-		triggerEvent('botAdded', $jsonData);
+		triggerEvent('botAdded', $jsonData, $plugins);
 	} else {
-		triggerEvent('join', $jsonData);
+		triggerEvent('join', $jsonData, $plugins);
 	}
 	//code
 	
@@ -202,7 +224,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	if (!strpos($user, 'language_code') === false) {
 		$user_language_code = $user->{'language_code'};
 	} else { $user_language_code = $language_code; }
-	triggerEvent('leave', $jsonData);
+	triggerEvent('leave', $jsonData, $plugins);
 	//code
 	
 }elseif (!strpos($rawData, 'photo') === false) {
@@ -218,7 +240,7 @@ if (!strpos($rawData, 'new_chat_member') === false) {
 	syslog(LOG_INFO, 'antwort file_id: ' .$file_id);
 	$pic = $apiURL. ''.$file_path;
 	
-	triggerEvent('photo', $jsonData);
+	triggerEvent('photo', $jsonData, $plugins);
 	//Code
 	
 	goto not_for_me;

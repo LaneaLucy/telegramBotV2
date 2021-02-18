@@ -116,16 +116,28 @@ function sendSticker($chat_ID, $file, $message_ID = "NULL")
 	}
 
 
-function getFile($file_id)
+function getFileById($file_id)
 	{
 	include 'include.php';
-	syslog(LOG_INFO, 'getFile file_id: ' .$file_id);
+	syslog(LOG_INFO, 'getFileById file_id: ' .$file_id);
 	$URL = $apiURL. 'getFile?file_id='.$file_id.'';
 	//syslog(LOG_INFO, 'replay_URL: ' .$URL);
 	$antwort = file_get_contents($URL);
-	syslog(LOG_DEBUG, 'getFile antwort: ' .$antwort);
+	syslog(LOG_DEBUG, 'getFileById antwort: ' .$antwort);
 	$jsonData = json_decode($antwort);
 	return $jsonData->{'result'}->{'file_path'};
+	}
+
+
+function getFile($file_path)
+	{
+	include 'include.php';
+	syslog(LOG_INFO, 'getFile file_path: ' .$file_path);
+	$URL = 'https://api.telegram.org/file/bot'.$token.'/'. $file_path;
+	//syslog(LOG_INFO, 'replay_URL: ' .$URL);
+	$antwort = file_get_contents($URL);
+	//syslog(LOG_DEBUG, 'getFile antwort: ' .$antwort);
+	return $antwort;
 	}
 
 function getMe()
